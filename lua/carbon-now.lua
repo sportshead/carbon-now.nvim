@@ -14,7 +14,11 @@ local language_map = {
 carbon.config = {
   base_url = "https://carbon.now.sh/",
   open_cmd = "xdg-open",
-  options = {},
+  options = {
+    titlebar = function()
+      return vim.fn.fnamemodify(vim.fn.expand("%"), ":.")
+    end,
+  },
 }
 
 ---encodes a given [str] string
@@ -40,6 +44,9 @@ local function encode_params(values)
   ---@type table<string, any>
   local params = {}
   for k, v in pairs(values) do
+    if type(v) == "function" then
+      v = v()
+    end
     if type(v) ~= "string" then
       v = tostring(v)
     end
@@ -59,8 +66,6 @@ local function get_carbon_now_snapshot_uri(code)
   local opts = carbon.config.options
   local ft = vim.bo.filetype
 
-  local filename = vim.fn.fnamemodify(vim.fn.expand("%"), ":.")
-
   -- carbon.now.sh parameters
   local params = {
     t = opts.theme,
@@ -75,7 +80,7 @@ local function get_carbon_now_snapshot_uri(code)
     dsyoff = opts.drop_shadow_offset_y,
     dsblur = opts.drop_shadow_blur,
     wm = opts.watermark,
-    tb = filename,
+    tb = opts.titlebar,
     code = code,
   }
 
